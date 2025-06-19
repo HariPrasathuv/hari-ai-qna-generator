@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document Question Generator</title>
+  <style>
+    .grp-upload-and-generate{
+        display:flex;
+        justify-content: center;
+    
+    }
+    .upload{
+        display:flex;
+        justify-content: center;
+    }
+
+    #button-upload{
+        width:250px;
+        background-color: #2600FF;
+        color:white;
+        height:30px;
+    }
+
+    
+  </style>
+</head>
+
+<body style="background: linear-gradient(to right, #CCF2D4 0%, #A1DDA3 50%, #78C872 100%);">
+    <h1 style="text-align: center;background: linear-gradient(to right, #222, #666); /* Dark text gradient */
+      background-clip: text;
+    -webkit-background-clip: text;
+
+     color: transparent;
+    -webkit-text-fill-color: transparent;font-size: 100px;">QnA Generator
+    </h1>
+    
+    <div class="grp-upload-and-generate">
+        <input type="file" id="fileInput" accept=".txt" /> 
+        
+    </div>
+    <br>
+    <div class="upload">
+            <button id="button-upload" onclick="upload()">Upload & Generate</button>
+    </div>
+    <br>
+    <br>
+    <p id="result"></p>
+  
+
+  <script>
+  async function upload() {
+    const fileInput = document.getElementById("fileInput");
+    const file = fileInput.files[0];
+    if (!file) {
+      alert("Please select a file first.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    document.getElementById("result").innerText = "Processing...";
+
+    try {
+      const res = await fetch("https://hariprasathuv-ai-qna-generator.hf.space/generate", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      let resultHTML = "";
+
+      if (data.error) {
+        resultHTML = `<p style="color:red;">${data.error}</p>`;
+      } else {
+        data.forEach((q, idx) => {
+          resultHTML += `
+            <div style="margin-bottom: 20px;">
+              <strong>Q${idx + 1}:</strong> ${q.Question}<br>
+              <strong>Options:</strong> ${q.Options.join(', ')}<br>
+              <strong>Answer:</strong> ${q.Answer}
+            </div>
+            <hr>
+          `;
+        });
+      }
+
+      document.getElementById("result").innerHTML = resultHTML;
+
+    } catch (err) {
+      console.error(err);
+      document.getElementById("result").innerText = "An error occurred.";
+    }
+  }
+</script>
+
+</body>
+</html>
